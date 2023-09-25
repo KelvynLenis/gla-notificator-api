@@ -22,7 +22,7 @@ export async function notificationsRoutes(app: FastifyInstance) {
     const subscription = request.body as WebPush.PushSubscription
     const nextNotification = scheduleNextIslandEvent(subscription);
 
-    console.log("submited", subscription)
+    // console.log("submited", subscription)
 
     // WebPush.sendNotification(subscription, 'Evento de ilha resetado')
 

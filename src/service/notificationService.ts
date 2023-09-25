@@ -1,7 +1,15 @@
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { Job, scheduleJob } from 'node-schedule';
 import WebPush from 'web-push';
-dayjs().locale('pt-br');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs().tz('America/Sao_Paulo');
+
+// dayjs().locale('pt-br');
+
+// dayjs.tz('America/Sao_Paulo');
 
 const islandEventTimes = ['00:06', '00:36', '01:06', '01:36', '02:06', 
                           '02:36', '03:06', '03:36', '04:06', '04:36', 
@@ -106,7 +114,9 @@ export function scheduleNextWantedPirate(subscription: WebPush.PushSubscription)
     wpJobs.forEach((job) => job.cancel());
   }
 
-  console.log(queue)
+  // console.log(queue)
+  console.log(now.format('HH:mm'))
+  // console.log(dayjs().locale('pt-br').tz('America/Sao_Paulo'))
   
   const filteredQueue = queue.filter((checkpoint) => checkpoint.time.isAfter(now));
   
