@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { Job, scheduleJob } from 'node-schedule';
 import WebPush from 'web-push';
+dayjs().locale('pt-br');
 
 const islandEventTimes = ['00:06', '00:36', '01:06', '01:36', '02:06', 
                           '02:36', '03:06', '03:36', '04:06', '04:36', 
