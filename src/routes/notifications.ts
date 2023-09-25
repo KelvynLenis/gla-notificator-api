@@ -2,6 +2,11 @@ import { FastifyInstance } from "fastify";
 import { clearIslandJobs, clearWPJobs, getNextIslandEvent, publicKey, scheduleNextIslandEvent, scheduleNextWantedPirate } from '../service/notificationService';
 import WebPush from 'web-push';
 
+interface requestBodyProps {
+  subscription: WebPush.PushSubscription,
+  now: string
+}
+
 export async function notificationsRoutes(app: FastifyInstance) {
   app.get('/public-key', async (_, reply) => {
       return {
@@ -19,8 +24,8 @@ export async function notificationsRoutes(app: FastifyInstance) {
   })
   
   app.post("/schedule-island-notification", async (request, reply) => {
-    const subscription = request.body as WebPush.PushSubscription
-    const nextNotification = scheduleNextIslandEvent(subscription);
+    const { subscription, now } = request.body as requestBodyProps
+    const nextNotification = scheduleNextIslandEvent(subscription, now);
 
     // console.log("submited", subscription)
 
@@ -30,8 +35,8 @@ export async function notificationsRoutes(app: FastifyInstance) {
   })
 
   app.post("/schedule-wanted-pirate-notification", async (request, reply) => {
-    const subscription = request.body as WebPush.PushSubscription
-    const nextWantedPirate =  scheduleNextWantedPirate(subscription);
+    const { subscription, now } = request.body as requestBodyProps
+    const nextWantedPirate =  scheduleNextWantedPirate(subscription, now);
 
     reply.status(201).send({ nextWantedPirate })
   })

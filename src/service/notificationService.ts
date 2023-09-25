@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
+// import timezone from 'dayjs/plugin/timezone';
+// import utc from 'dayjs/plugin/utc';
 import { Job, scheduleJob } from 'node-schedule';
 import WebPush from 'web-push';
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs().tz('America/Sao_Paulo');
+// dayjs.extend(utc);
+// dayjs.extend(timezone);
+// dayjs().tz('America/Sao_Paulo');
 
 // dayjs().locale('pt-br');
 
@@ -49,42 +49,49 @@ function notify(title: string, subscription: WebPush.PushSubscription) {
 //   subscription = subscriptionIn;
 // }
 
-export function scheduleNextIslandEvent(subscription: WebPush.PushSubscription){
-  const queue = makeIslandEventQueue();
-  const now = dayjs();
-
+export function scheduleNextIslandEvent(subscription: WebPush.PushSubscription, now: string){
+  const queue = makeIslandEventQueue(now);
+  // const now = dayjs();
+  
   if(islandJobs.length > 0){
     islandJobs.forEach((job) => job.cancel());
   }
-
-  const filteredQueue = queue.filter((checkpoint) => checkpoint.time.isAfter(now));
   
-  let nextIslandEvent = '';
-
-  if(filteredQueue.length > 0){
-    const nextHour = filteredQueue[0].time.hour();
-    const nextMinute = filteredQueue[0].time.minute();
-    const job = scheduleJob({ hour: nextHour, minute: nextMinute }, () => notify(filteredQueue[0].title, subscription));
+  queue.map((checkpoint) => {
+    const nextHour = checkpoint.time.hour();
+    const nextMinute = checkpoint.time.minute();
+    const job = scheduleJob({ hour: nextHour, minute: nextMinute }, () => notify(checkpoint.title, subscription));
     islandJobs.push(job);
+  })
+  
+  // const filteredQueue = queue.filter((checkpoint) => checkpoint.time.isAfter(now));
+  
+  const nextIslandEvent = getNextIslandEvent();
 
-    const hour = filteredQueue[0].time.hour() < 10 ? '0' + filteredQueue[0].time.hour() : filteredQueue[0].time.hour();
-    const minute = filteredQueue[0].time.minute() < 10 ? '0' + filteredQueue[0].time.minute() : filteredQueue[0].time.minute();
-    // setNextIslandEvent(hour + ':' + minute);
-    nextIslandEvent = hour + ':' + minute;
-  }
+  // if(filteredQueue.length > 0){
+  //   const nextHour = filteredQueue[0].time.hour();
+  //   const nextMinute = filteredQueue[0].time.minute();
+  //   const job = scheduleJob({ hour: nextHour, minute: nextMinute }, () => notify(filteredQueue[0].title, subscription));
+  //   islandJobs.push(job);
+
+  //   const hour = filteredQueue[0].time.hour() < 10 ? '0' + filteredQueue[0].time.hour() : filteredQueue[0].time.hour();
+  //   const minute = filteredQueue[0].time.minute() < 10 ? '0' + filteredQueue[0].time.minute() : filteredQueue[0].time.minute();
+  //   // setNextIslandEvent(hour + ':' + minute);
+  //   nextIslandEvent = hour + ':' + minute;
+  // }
 
 
   return nextIslandEvent;
 }
 
-function makeIslandEventQueue() {
+function makeIslandEventQueue(actualTime: string) {
   const initialTime = dayjs().set('hour', 0).set('minute', 6).set('second', 0);
   const finalTime = dayjs().set('hour', 23).set('minute', 6).set('second', 0);  
   const numberOfAlarms = islandEventTimes.length;
     
   const queue = [];
   let time = initialTime;
-  const now = dayjs();
+  const now = dayjs().hour(Number(actualTime.split(':')[0])).minute(Number(actualTime.split(':')[1])).second(0).millisecond(0);
   
   for (let i = 0; i < numberOfAlarms; i++) {
     time = dayjs().hour(time.hour()).minute(time.minute() + 30).second(0).millisecond(0)
@@ -105,46 +112,53 @@ function makeIslandEventQueue() {
   return queue; 
 }
 
-export function scheduleNextWantedPirate(subscription: WebPush.PushSubscription){
-  const queue = makeWPQueue();
+export function scheduleNextWantedPirate(subscription: WebPush.PushSubscription, now: string){
+  const queue = makeWPQueue(now);
 
-  const now = dayjs();
+  // const now = dayjs();
 
   if(wpJobs.length > 0){
     wpJobs.forEach((job) => job.cancel());
   }
 
+  queue.map((checkpoint) => {
+    const nextHour = checkpoint.time.hour();
+    const nextMinute = checkpoint.time.minute();
+    const job = scheduleJob({ hour: nextHour, minute: nextMinute }, () => notify(checkpoint.title, subscription));
+    wpJobs.push(job);
+  })
+
   // console.log(queue)
-  console.log(now.format('HH:mm'))
+  console.log(now)
   // console.log(dayjs().locale('pt-br').tz('America/Sao_Paulo'))
   
-  const filteredQueue = queue.filter((checkpoint) => checkpoint.time.isAfter(now));
+  // const filteredQueue = queue.filter((checkpoint) => checkpoint.time.isAfter(now));
   
-  let nextWantedPirate = '';
+  let nextWantedPirate = getNextWantedPirate();
   
-  if(filteredQueue.length > 0){
-    const nextHour = filteredQueue[0].time.hour();
-    const nextMinute = filteredQueue[0].time.minute();
-    const job = scheduleJob({ hour: nextHour, minute: nextMinute }, () => notify(filteredQueue[0].title, subscription));
-    wpJobs.push(job);
+  // if(filteredQueue.length > 0){
+  //   const nextHour = filteredQueue[0].time.hour();
+  //   const nextMinute = filteredQueue[0].time.minute();
+  //   const job = scheduleJob({ hour: nextHour, minute: nextMinute }, () => notify(filteredQueue[0].title, subscription));
+  //   wpJobs.push(job);
 
-    const hour = filteredQueue[0].time.hour() < 10 ? '0' + filteredQueue[0].time.hour() : filteredQueue[0].time.hour();
-    const minute = filteredQueue[0].time.minute() < 10 ? '0' + filteredQueue[0].time.minute() : filteredQueue[0].time.minute();
-    // setNextWantedPirate(hour + ':' + minute);
-    nextWantedPirate = hour + ':' + minute;
-  }
+  //   const hour = filteredQueue[0].time.hour() < 10 ? '0' + filteredQueue[0].time.hour() : filteredQueue[0].time.hour();
+  //   const minute = filteredQueue[0].time.minute() < 10 ? '0' + filteredQueue[0].time.minute() : filteredQueue[0].time.minute();
+  //   // setNextWantedPirate(hour + ':' + minute);
+  //   nextWantedPirate = hour + ':' + minute;
+  // }
 
   return nextWantedPirate;
 }
 
-function makeWPQueue() {
+function makeWPQueue(actualTime: string) {
   const initialTime = dayjs().set('hour', 0).set('minute', 36).set('second', 0);
   const finalTime = dayjs().set('hour', 23).set('minute', 36).set('second', 0);
   const numberOfAlarms = wantedPirateTimes.length;
     
   const queue = [];
   let time = initialTime;
-  const now = dayjs();
+  const now = dayjs().hour(Number(actualTime.split(':')[0])).minute(Number(actualTime.split(':')[1])).second(0).millisecond(0);
   
   for (let i = 0; i < numberOfAlarms; i++) {
     time = dayjs().hour(time.hour() + 2).minute(time.minute()).second(0).millisecond(0)
