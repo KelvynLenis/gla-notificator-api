@@ -105,6 +105,8 @@ export function scheduleNextWantedPirate(subscription: WebPush.PushSubscription)
   if(wpJobs.length > 0){
     wpJobs.forEach((job) => job.cancel());
   }
+
+  console.log(queue)
   
   const filteredQueue = queue.filter((checkpoint) => checkpoint.time.isAfter(now));
   
