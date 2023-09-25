@@ -1,11 +1,11 @@
 import { FastifyInstance } from "fastify";
-import { clearIslandJobs, clearWPJobs, getNextIslandEvent, publicKeyGenerated, scheduleNextIslandEvent, scheduleNextWantedPirate } from '../service/notificationService';
+import { clearIslandJobs, clearWPJobs, getNextIslandEvent, publicKey, scheduleNextIslandEvent, scheduleNextWantedPirate } from '../service/notificationService';
 import WebPush from 'web-push';
 
 export async function notificationsRoutes(app: FastifyInstance) {
   app.get('/public-key', async (_, reply) => {
       return {
-        publicKeyGenerated
+        publicKey
       }
     })
 

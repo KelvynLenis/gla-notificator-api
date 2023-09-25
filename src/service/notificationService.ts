@@ -21,15 +21,15 @@ const wpJobs: Job[] = [];
 const islandJobs: Job[] = [];
 // export let subscription: WebPush.PushSubscription;
 
-// export const { publicKey, privateKey } = WebPush.generateVAPIDKeys();
+export const { publicKey, privateKey } = WebPush.generateVAPIDKeys();
 
-export const publicKeyGenerated = 'BOtVKO6u05dpqWRwDJDh47WDjs6aGEk1DdFfL3XGYG1yCensEWl1wWG2B1FjtRq6nBhObFEgb999r_WqwNQ2cxc'
-const privateKeyGenerated = 'TJ8sx7qoYlim9r_HijI02ahuLSLAPzsFnysQFVwBKgA'
+// export const publicKeyGenerated = 'BOtVKO6u05dpqWRwDJDh47WDjs6aGEk1DdFfL3XGYG1yCensEWl1wWG2B1FjtRq6nBhObFEgb999r_WqwNQ2cxc'
+// const privateKeyGenerated = 'TJ8sx7qoYlim9r_HijI02ahuLSLAPzsFnysQFVwBKgA'
 
 // console.log(publicKey)
 // console.log( privateKey)
 
-WebPush.setVapidDetails('https://gla-notificator.vercel.app', publicKeyGenerated, privateKeyGenerated);
+WebPush.setVapidDetails('https://gla-notificator.vercel.app', publicKey, privateKey);
                         
 function notify(title: string, subscription: WebPush.PushSubscription) {
   title === 'Evento de ilha resetado' ? islandJobs.shift() : wpJobs.shift();  
