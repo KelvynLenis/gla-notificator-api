@@ -29,7 +29,7 @@ const privateKeyGenerated = 'TJ8sx7qoYlim9r_HijI02ahuLSLAPzsFnysQFVwBKgA'
 // console.log(publicKey)
 // console.log( privateKey)
 
-WebPush.setVapidDetails('mailto:http://localhost:5173', publicKeyGenerated, privateKeyGenerated);
+WebPush.setVapidDetails('https://gla-notificator.vercel.app', publicKeyGenerated, privateKeyGenerated);
                         
 function notify(title: string, subscription: WebPush.PushSubscription) {
   title === 'Evento de ilha resetado' ? islandJobs.shift() : wpJobs.shift();  

@@ -12,14 +12,14 @@ app.register(cors, {
 
 app.register(notificationsRoutes)
 
-// app.listen({
-//     port: PORT,
-// }).then(() => {
-//   console.log('🚀 HTTP server running on port http://localhost:3000')
-// })
-
 app.listen({
-  port: 3000,
+    port: PORT,
 }).then(() => {
-console.log('🚀 HTTP server running on port http://localhost:3000')
+  console.log('🚀 HTTP server running on port http://localhost:3000')
 })
+
+// app.listen({
+//   port: 3000,
+// }).then(() => {
+// console.log('🚀 HTTP server running on port http://localhost:3000')
+// })
