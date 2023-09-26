@@ -17,19 +17,12 @@ export async function notificationsRoutes(app: FastifyInstance) {
   app.post('/subscribe', async (request, reply) => {
     const subscription: WebPush.PushSubscription = request.body as WebPush.PushSubscription
 
-    // subscribe(subscription);
-    // console.log(subscription)
-
     reply.status(201).send() ;
   })
   
   app.post("/schedule-island-notification", async (request, reply) => {
     const { subscription, now } = request.body as requestBodyProps
     const nextNotification = scheduleNextIslandEvent(subscription, now);
-
-    // console.log("submited", subscription)
-
-    // WebPush.sendNotification(subscription, 'Evento de ilha resetado')
 
     reply.status(201).send({ nextNotification })
   })
