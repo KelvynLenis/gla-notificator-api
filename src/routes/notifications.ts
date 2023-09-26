@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { clearIslandJobs, clearWPJobs, getNextIslandEvent, publicKey, scheduleNextIslandEvent, scheduleNextWantedPirate } from '../service/notificationService';
+import { clearIslandJobs, clearWPJobs, getNextIslandEvent, publicKey, scheduleAllEvents, scheduleAllWantedPirates, scheduleNextIslandEvent, scheduleNextWantedPirate } from '../service/notificationService';
 import WebPush from 'web-push';
 
 interface requestBodyProps {
@@ -44,6 +44,22 @@ export async function notificationsRoutes(app: FastifyInstance) {
     clearWPJobs();
 
     reply.status(201).send()
+  })
+
+  app.post('/schedule-all-events', async (request, reply) => {
+    const subscription: WebPush.PushSubscription = request.body as WebPush.PushSubscription
+
+    const events = scheduleAllEvents(subscription);
+
+    reply.status(201).send({ events })
+  })
+
+  app.post('/schedule-all-wp', async (request, reply) => {
+    const subscription: WebPush.PushSubscription = request.body as WebPush.PushSubscription
+
+    const wp = scheduleAllWantedPirates(subscription);
+
+    reply.status(201).send({ wp })
   })
 
   app.get('/next-island-event', async (request, reply) => {

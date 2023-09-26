@@ -33,6 +33,7 @@ const privateKey = 'WY8P3-fqvAg5ZSjpPM297p5oUxQUxQ0tVI9zoY4tQr4'
 
 
 WebPush.setVapidDetails('https://gla-notificator.vercel.app', publicKey, privateKey);
+// WebPush.setVapidDetails('mailto:http://localhost:5173', publicKey, privateKey);
                         
 function notify(title: string, subscription: WebPush.PushSubscription) {
   if(title === 'Evento de ilha resetado') { 
@@ -43,6 +44,27 @@ function notify(title: string, subscription: WebPush.PushSubscription) {
     wpQueue.shift();
   } 
   WebPush.sendNotification(subscription, title);
+}
+
+export function scheduleAllEvents(subscription: WebPush.PushSubscription) {
+  islandEventTimes.map((time) => {
+    const hour = Number(time.split(':')[0]);
+    const minute = Number(time.split(':')[1]);
+    const job = scheduleJob({ hour: hour, minute: minute }, () => notify('Evento de ilha resetado', subscription))
+    islandJobs.push(job);
+  });
+  return islandEventTimes;
+}
+
+export function scheduleAllWantedPirates(subscription: WebPush.PushSubscription) {
+  wantedPirateTimes.map((time) => {
+    const hour = Number(time.split(':')[0]);
+    const minute = Number(time.split(':')[1]);
+    const job = scheduleJob({ hour: hour, minute: minute }, () => notify('Piratas procurados resetado', subscription))
+    wpJobs.push(job);
+  });
+
+  return wantedPirateTimes;
 }
 
 
