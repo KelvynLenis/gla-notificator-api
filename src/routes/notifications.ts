@@ -47,9 +47,10 @@ export async function notificationsRoutes(app: FastifyInstance) {
   })
 
   app.post('/schedule-all-events', async (request, reply) => {
-    const subscription: WebPush.PushSubscription = request.body as WebPush.PushSubscription
+    // const subscription: WebPush.PushSubscription = request.body as WebPush.PushSubscription
+    const { subscription, now } = request.body as requestBodyProps
 
-    const events = scheduleAllEvents(subscription);
+    const events = scheduleAllEvents(subscription, now);
 
     reply.status(201).send({ events })
   })

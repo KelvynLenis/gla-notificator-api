@@ -46,14 +46,31 @@ function notify(title: string, subscription: WebPush.PushSubscription) {
   WebPush.sendNotification(subscription, title);
 }
 
-export function scheduleAllEvents(subscription: WebPush.PushSubscription) {
-  islandEventTimes.map((time) => {
-    const hour = Number(time.split(':')[0]);
-    const minute = Number(time.split(':')[1]);
-    const job = scheduleJob({ hour: hour, minute: minute }, () => notify('Evento de ilha resetado', subscription))
-    islandJobs.push(job);
+export function scheduleAllEvents(subscription: WebPush.PushSubscription, actualTime: string) {
+  const now = dayjs().hour(Number(actualTime.split(':')[0])).minute(Number(actualTime.split(':')[1])).second(0).millisecond(0);
+  const eventQueue = islandEventTimes.map((time) => {
+    const eventTime = dayjs().hour(Number(time.split(':')[0])).minute(Number(time.split(':')[1])).second(0).millisecond(0);
+    
+    if(now.isBefore(eventTime)){
+      const checkpoint = {
+        time: eventTime,
+        title:'Evento de ilha resetado'
+      }
+
+      islandQueue.push(checkpoint);
+    }
   });
-  return islandEventTimes;
+
+  const interval = setInterval(()=> {
+    const now = dayjs();
+    if(now.diff(islandQueue[0].time) > -1000 && now.diff(islandQueue[0].time) < 1000) {
+      WebPush.sendNotification(subscription, islandQueue[0].title);
+      islandQueue.shift();
+      if(islandQueue.length === 0){
+        clearInterval(interval)
+      }
+    }
+    }, 1000);
 }
 
 export function scheduleAllWantedPirates(subscription: WebPush.PushSubscription) {
@@ -186,6 +203,7 @@ export function clearWPJobs() {
 }
 
 export function getNextIslandEvent() {
+  // return islandQueue[0].time.format('HH:mm');
   return islandQueue[0].time.format('HH:mm');
 }
 
