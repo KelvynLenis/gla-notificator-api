@@ -24,6 +24,9 @@ export async function notificationsRoutes(app: FastifyInstance) {
     const { subscription, now } = request.body as requestBodyProps
     const nextNotification = scheduleNextIslandEvent(subscription, now);
 
+    WebPush.sendNotification(subscription, "Push to mobile test");
+
+
     reply.status(201).send({ nextNotification })
   })
 
