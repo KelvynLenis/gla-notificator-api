@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import { Job, scheduleJob } from 'node-schedule';
 import WebPush from 'web-push';
 
+
 const islandEventTimes = ['00:06', '00:36', '01:06', '01:36', '02:06', 
                           '02:36', '03:06', '03:36', '04:06', '04:36', 
                           '05:06', '05:36', '06:06', '06:36', '07:06', 
@@ -20,8 +21,11 @@ const wantedPirateTimes = ['00:36', '02:36', '04:36', '06:36', '08:36',
 const wpJobs: Job[] = [];
 const islandJobs: Job[] = [];
 
-const wpQueue: { time: dayjs.Dayjs, title: string }[] = [];
+const islandIntervals: NodeJS.Timeout[] = [];
+const wpIntervals: NodeJS.Timeout[] = [];
+
 const islandQueue: { time: dayjs.Dayjs, title: string }[] = [];
+const wpQueue: { time: dayjs.Dayjs, title: string }[] = [];
 
 // export const { publicKey, privateKey } = WebPush.generateVAPIDKeys();
 
@@ -36,6 +40,7 @@ WebPush.setVapidDetails('https://gla-notificator.vercel.app', publicKey, private
 // WebPush.setVapidDetails('mailto:http://localhost:5173', publicKey, privateKey);
                         
 function notify(title: string, subscription: WebPush.PushSubscription) {
+  console.log(subscription)
   if(title === 'Evento de ilha resetado') { 
     islandJobs.shift();
     islandQueue.shift(); 
@@ -48,9 +53,10 @@ function notify(title: string, subscription: WebPush.PushSubscription) {
 
 export function scheduleAllEvents(subscription: WebPush.PushSubscription, actualTime: string) {
   const now = dayjs().hour(Number(actualTime.split(':')[0])).minute(Number(actualTime.split(':')[1])).second(0).millisecond(0);
+
   const eventQueue = islandEventTimes.map((time) => {
     const eventTime = dayjs().hour(Number(time.split(':')[0])).minute(Number(time.split(':')[1])).second(0).millisecond(0);
-    
+
     if(now.isBefore(eventTime)){
       const checkpoint = {
         time: eventTime,
@@ -61,8 +67,11 @@ export function scheduleAllEvents(subscription: WebPush.PushSubscription, actual
     }
   });
 
+
   const interval = setInterval(()=> {
+    islandIntervals.push(interval);
     const now = dayjs();
+
     if(now.diff(islandQueue[0].time) > -1000 && now.diff(islandQueue[0].time) < 1000) {
       WebPush.sendNotification(subscription, islandQueue[0].title);
       islandQueue.shift();
@@ -70,16 +79,40 @@ export function scheduleAllEvents(subscription: WebPush.PushSubscription, actual
         clearInterval(interval)
       }
     }
-    }, 1000);
+  }, 1000);
+
+  return islandQueue;
 }
 
-export function scheduleAllWantedPirates(subscription: WebPush.PushSubscription) {
-  wantedPirateTimes.map((time) => {
-    const hour = Number(time.split(':')[0]);
-    const minute = Number(time.split(':')[1]);
-    const job = scheduleJob({ hour: hour, minute: minute }, () => notify('Piratas procurados resetado', subscription))
-    wpJobs.push(job);
+export function scheduleAllWantedPirates(subscription: WebPush.PushSubscription, actualTime: string) {
+  const now = dayjs().hour(Number(actualTime.split(':')[0])).minute(Number(actualTime.split(':')[1])).second(0).millisecond(0);
+  
+  const wantedQueue = wantedPirateTimes.map((time) => {
+    const eventTime = dayjs().hour(Number(time.split(':')[0])).minute(Number(time.split(':')[1])).second(0).millisecond(0);
+
+    if(now.isBefore(eventTime)){
+      const checkpoint = {
+        time: eventTime,
+        title:'Evento de ilha resetado'
+      }
+
+      wpQueue.push(checkpoint);
+    }
   });
+
+  const interval = setInterval(()=> {
+    wpIntervals.push(interval);
+    const now = dayjs();
+    
+    if(now.diff(wpQueue[0].time) > -1000 && now.diff(wpQueue[0].time) < 1000) {
+      WebPush.sendNotification(subscription, wpQueue[0].title);
+      wpQueue.shift();
+      if(wpQueue.length === 0){
+        clearInterval(interval)
+      }
+    }
+  }, 1000);
+
 
   return wantedPirateTimes;
 }
@@ -95,10 +128,19 @@ export function scheduleNextIslandEvent(subscription: WebPush.PushSubscription, 
   queue.map((checkpoint) => {
     const nextHour = checkpoint.time.hour();
     const nextMinute = checkpoint.time.minute();
-    const job = scheduleJob({ hour: nextHour, minute: nextMinute }, () => notify(checkpoint.title, subscription));
-    islandJobs.push(job);
+    // const job = scheduleJob({ hour: nextHour, minute: nextMinute }, () => notify(checkpoint.title, subscription));
+    // islandJobs.push(job);
     islandQueue.push(checkpoint);
   })
+
+  const interval = setInterval(()=> {
+    // const now = dayjs();
+    // if(now.diff(islandQueue[0].time) > -1000 && now.diff(islandQueue[0].time) < 1000) {
+    //   WebPush.sendNotification(subscription, islandQueue[0].title);
+    //   islandQueue.shift();
+    // }
+    WebPush.sendNotification(subscription, 'islandQueue[0].title');
+  }, 1000 * 60 * 2);
   
   const nextIslandEvent = getNextIslandEvent();
 
@@ -193,12 +235,22 @@ export function clearIslandJobs() {
     islandJobs.map((job) => job.cancel());
     islandJobs.map(() => islandJobs.shift());
   }
+
+  if(islandIntervals.length > 0){
+    islandIntervals.map((interval) => clearInterval(interval));
+    islandIntervals.map(() => islandIntervals.shift());
+  }
 }
 
 export function clearWPJobs() {
   if(wpJobs.length > 0){
     wpJobs.map((job) => job.cancel());
     wpJobs.map(() => wpJobs.shift());
+  }
+
+  if(wpIntervals.length > 0){
+    wpIntervals.map((interval) => clearInterval(interval));
+    wpIntervals.map(() => wpIntervals.shift());
   }
 }
 

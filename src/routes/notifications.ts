@@ -1,10 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { clearIslandJobs, clearWPJobs, getNextIslandEvent, publicKey, scheduleAllEvents, scheduleAllWantedPirates, scheduleNextIslandEvent, scheduleNextWantedPirate } from '../service/notificationService';
 import WebPush from 'web-push';
+import dayjs from "dayjs";
 
 interface requestBodyProps {
   subscription: WebPush.PushSubscription,
-  now: string
+  nowString: string
 }
 
 export async function notificationsRoutes(app: FastifyInstance) {
@@ -21,20 +22,20 @@ export async function notificationsRoutes(app: FastifyInstance) {
   })
   
   app.post("/schedule-island-notification", async (request, reply) => {
-    const { subscription, now } = request.body as requestBodyProps
-    const nextNotification = scheduleNextIslandEvent(subscription, now);
+    const { subscription, nowString } = request.body as requestBodyProps
+    // const nextNotification = scheduleNextIslandEvent(subscription, now);
 
     WebPush.sendNotification(subscription, "Push to mobile test");
 
 
-    reply.status(201).send({ nextNotification })
+    // reply.status(201).send({ nextNotification })
   })
 
   app.post("/schedule-wanted-pirate-notification", async (request, reply) => {
-    const { subscription, now } = request.body as requestBodyProps
-    const nextWantedPirate =  scheduleNextWantedPirate(subscription, now);
+    const { subscription, nowString } = request.body as requestBodyProps
+    // const nextWantedPirate =  scheduleNextWantedPirate(subscription, now);
 
-    reply.status(201).send({ nextWantedPirate })
+    // reply.status(201).send({ nextWantedPirate })
   })
 
   app.post('/unsubscribe-island', async (request, reply) => {
@@ -51,17 +52,21 @@ export async function notificationsRoutes(app: FastifyInstance) {
 
   app.post('/schedule-all-events', async (request, reply) => {
     // const subscription: WebPush.PushSubscription = request.body as WebPush.PushSubscription
-    const { subscription, now } = request.body as requestBodyProps
+    const { subscription, nowString } = request.body as requestBodyProps
 
-    const events = scheduleAllEvents(subscription, now);
+    console.log(subscription)
+
+    const events = scheduleAllEvents(subscription, nowString);
 
     reply.status(201).send({ events })
   })
 
   app.post('/schedule-all-wp', async (request, reply) => {
-    const subscription: WebPush.PushSubscription = request.body as WebPush.PushSubscription
+    const { subscription, nowString } = request.body as requestBodyProps
 
-    const wp = scheduleAllWantedPirates(subscription);
+    console.log(subscription)
+
+    const wp = scheduleAllWantedPirates(subscription, nowString);
 
     reply.status(201).send({ wp })
   })
