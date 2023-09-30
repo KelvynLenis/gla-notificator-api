@@ -15,8 +15,6 @@ app.register(notificationsRoutes)
 app.listen({
     host: '0.0.0.0',
     port: PORT,
-}).then(() => {
-    console.log(`🚀 HTTP server running on port http://localhost:${PORT}`)
 })
 
 // app.listen({
